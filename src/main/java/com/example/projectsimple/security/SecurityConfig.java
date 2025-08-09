@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-
     private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
@@ -27,22 +26,28 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()  // routes publiques (login/register)
-                        .anyRequest().authenticated()                 // tout le reste est sécurisé
+                        .requestMatchers(
+                                "/api/auth/**",          // login/register publics
+                                "/swagger-ui/**",        // Swagger UI
+                                "/v3/api-docs/**",       // API docs JSON
+                                "/swagger-resources/**", // ressources Swagger
+                                "/webjars/**"            // dépendances Swagger
+                        ).permitAll()
+                        .anyRequest().authenticated() // tout le reste nécessite un JWT
                 )
                 .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // pas de session
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // filtre JWT avant auth standard
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // encode les mots de passe en bcrypt
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager(); // permet d'utiliser l'authentification manuellement si besoin
+        return config.getAuthenticationManager();
     }
 }

@@ -15,6 +15,6 @@ public class Article {
     private String title;
     private String content;
 
-    private String author; // Optionnel : tu peux aussi relier à un User si tu veux
+    private String author; // Optionnel
 
 }
